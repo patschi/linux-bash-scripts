@@ -80,7 +80,7 @@ function SetupvServer() {
 	if [[ $arch == "amd64" ]]; then
 		image="debian-6.0-amd64-minimal"
 	else
-		image="debian-5.0-i386-minimal"
+		image="debian-6.0-i386-minimal"
 	fi
 	dialog --backtitle "OpenVZ Installscript" --title "Question" --yesno 'The setup is complete so far.\nShould I automically create\nnow a vserver for you?\n\nYou need at least one free IP\nand not from the host system!\n\nSettings:\n Image...: $image\n DNS.....: 8.8.8.8\n Hostname: I will ask you.\n IP......: I will ask you.\n Password: I will ask you.' 17 55
 	if [[ $? == "0" ]]; then
@@ -93,7 +93,7 @@ function SetupvServer() {
 		exec 3>&-
 		echo "$VALUES"
 		echo "[INFO] Creating vServer with your settings now..."
-		# vzctl create 101 --ostemplate $image --config vps.basic
+		# vzctl create 101 --ostemplate $image --config basic
 		# vzctl set 101 --onboot yes --save
 		# vzctl set 101 --hostname $host --save
 		# vzctl set 101 --ipadd $ip --save
@@ -119,6 +119,17 @@ function InstallPackages(){
 }
 
 function InstallCommands(){
+	echo " "
+	sleep 1
+	echo "[INFO] Installing OpenVZ commands..."
+	sleep 2
+	apt-get install vzctl vzquota -y
+	echo " "
+	pause
+	menu
+}
+
+function InstallCommandsBeta(){
 	echo " "
 	echo "[INFO] Downloading OpenVZ command packages..."
 	sleep 2
