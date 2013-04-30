@@ -111,7 +111,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 
 	PSOLVERSION="1.5.27.2"
 	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
-		echo "Downloading and extracting pagespeed $PSOOLVERSION library..."
+		echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
 		cd $MODPATH/ngx_pagespeed/
 		wget -nv https://dl.google.com/dl/page-speed/psol/$PSOLVERSION.tar.gz
 		mkdir -p $MODPATH/ngx_pagespeed/psol/
