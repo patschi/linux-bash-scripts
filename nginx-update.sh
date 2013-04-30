@@ -9,7 +9,7 @@
 # Changelog:
 #   v1.0.0: First version.
 #   v1.0.1: Installing 'git-core' instead of the complete 'git'
-#   v1.0.2: Fixed update bug and check for the PSOL lubrary
+#   v1.0.2: Fixed update bug and check for the PSOL library
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
