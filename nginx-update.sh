@@ -3,12 +3,13 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.0.1
-# Date...: 29.04.2013
+# Version: 1.0.2
+# Date...: 30.04.2013
 #
 # Changelog:
 #   v1.0.0: First version.
 #   v1.0.1: Installing 'git-core' instead of the complete 'git'
+#   v1.0.2: Fixed update bug and check for the PSOL lubrary
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -108,6 +109,16 @@ if [[ "$REV2" < "$REV1" ]]; then
 		git pull
 	fi
 
+	PSOLVERSION="1.5.27.2"
+	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
+		echo "Downloading and extracting pagespeed $PSOOLVERSION library..."
+		cd $MODPATH/ngx_pagespeed/
+		wget -nv https://dl.google.com/dl/page-speed/psol/$PSOLVERSION.tar.gz
+		mkdir -p $MODPATH/ngx_pagespeed/psol/
+		tar -xzvf $PSOLVERSION.tar.gz &>/dev/null
+		rm $PSOLVERSION.tar.gz
+	fi
+
 	echo " "
 	echo "[INFO] Updateing nginx..."
 	sleep 1
@@ -121,12 +132,9 @@ if [[ "$REV2" < "$REV1" ]]; then
 	#  sed -i "s/static char ngx\_http\_server\_full\_string\[\] \= \"Server\: \" NGINX\_VER CRLF\;/static char ngx\_http\_server\_full\_string\[\] \= \"Server\: \'\; DROP TABLE servertypes\; \-\-\" CRLF\;/g" ngx_http_header_filter_module.c
 
 	cd $INSTALL/source/
-	mv auto/configure .
-	chmod 777 configure
-
 	echo "[INFO] Configuring..."
 	sleep 1
-	./configure --user=www-data --group=www-data --with-cpu-opt=amd64 --prefix="$INSTALL" --pid-path="$PIDFILE" --lock-path="$LOCKFILE" --with-http_spdy_module --with-http_image_filter_module --with-http_geoip_module --with-http_xslt_module --with-rtsig_module --with-poll_module --with-http_sub_module --with-http_flv_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_stub_status_module --with-file-aio --with-ipv6 --with-http_realip_module --with-http_addition_module --with-select_module --with-http_ssl_module --with-libatomic --with-debug --add-module="$MODPATH"/headers-more-nginx-module --add-module="$MODPATH"/ngx_pagespeed --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module
+	./auto/configure --user=www-data --group=www-data --with-cpu-opt=amd64 --prefix="$INSTALL" --pid-path="$PIDFILE" --lock-path="$LOCKFILE" --with-http_spdy_module --with-http_image_filter_module --with-http_geoip_module --with-http_xslt_module --with-rtsig_module --with-poll_module --with-http_sub_module --with-http_flv_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_stub_status_module --with-file-aio --with-ipv6 --with-http_realip_module --with-http_addition_module --with-select_module --with-http_ssl_module --with-libatomic --with-debug --add-module="$MODPATH"/headers-more-nginx-module --add-module="$MODPATH"/ngx_pagespeed --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module
 
 	echo "[INFO] Starting compiling..."
 	sleep 1
