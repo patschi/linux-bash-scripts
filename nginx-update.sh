@@ -3,14 +3,15 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.0.3
-# Date...: 30.04.2013
+# Version: 1.1.0
+# Date...: 07.05.2013
 #
 # Changelog:
 #   v1.0.0: First version.
 #   v1.0.1: Installing 'git-core' instead of the complete 'git'
 #   v1.0.2: Fixed update bug and check for the PSOL library
 #   v1.0.3: Using HTTP for PSOL library, using 'git' again, using github link
+#   v1.1.0: Check if ./configure was executed successfully or not
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -20,6 +21,11 @@
 # directly execute this script by using:
 #   wget -O - https://raw.github.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
 #
+
+USER="www-data"
+GROUP="www-data"
+CPUOPT="amd64"
+
 INSTALL="/srv/nginx"
 CONFDIR="$INSTALL/conf"
 SBINDIR="$INSTALL/sbin"
@@ -135,16 +141,20 @@ if [[ "$REV2" < "$REV1" ]]; then
 	cd $INSTALL/source/
 	echo "[INFO] Configuring..."
 	sleep 1
-	./auto/configure --user=www-data --group=www-data --with-cpu-opt=amd64 --prefix="$INSTALL" --pid-path="$PIDFILE" --lock-path="$LOCKFILE" --with-http_spdy_module --with-http_image_filter_module --with-http_geoip_module --with-http_xslt_module --with-rtsig_module --with-poll_module --with-http_sub_module --with-http_flv_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_stub_status_module --with-file-aio --with-ipv6 --with-http_realip_module --with-http_addition_module --with-select_module --with-http_ssl_module --with-libatomic --with-debug --add-module="$MODPATH"/headers-more-nginx-module --add-module="$MODPATH"/ngx_pagespeed --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module
+	./auto/configure --user="$USER" --group="$GROUP" --with-cpu-opt="$CPUOPT" --prefix="$INSTALL" --pid-path="$PIDFILE" --lock-path="$LOCKFILE" --with-http_spdy_module --with-http_image_filter_module --with-http_geoip_module --with-http_xslt_module --with-rtsig_module --with-poll_module --with-http_sub_module --with-http_flv_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_stub_status_module --with-file-aio --with-ipv6 --with-http_realip_module --with-http_addition_module --with-select_module --with-http_ssl_module --with-libatomic --with-debug --add-module="$MODPATH"/headers-more-nginx-module --add-module="$MODPATH"/ngx_pagespeed --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module
+	if [ ${?} -ne 0 ]; then
+		echo "[ERROR] Configuration failed. Aborting."
+		exit 1
+	fi
 
 	echo "[INFO] Starting compiling..."
 	sleep 1
 	make
 	make install
 
-	cp "$CONFDIR"/nginx.conf.b "$CONFDIR"/nginx.conf
+	cp "$CONFDIR"/nginx.conf.b "$CONFDIR"/nginx.conf &>/dev/null
 	if command -v mail; then
-		echo "Server 1: nginx was updated to version $NGINXVER (Revision $REV1)" | mail -s "nginx update" $MAIL
+		echo "nginx was updated to version $NGINXVER (Revision $REV1)" | mail -s "nginx update" $MAIL
 	fi
 	echo "[INFO] Update completed."
 
