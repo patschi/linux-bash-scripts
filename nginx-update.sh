@@ -3,13 +3,14 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.0.2
+# Version: 1.0.3
 # Date...: 30.04.2013
 #
 # Changelog:
 #   v1.0.0: First version.
 #   v1.0.1: Installing 'git-core' instead of the complete 'git'
 #   v1.0.2: Fixed update bug and check for the PSOL library
+#   v1.0.3: Using HTTP for PSOL library, using 'git' again, using github link
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -17,7 +18,7 @@
 #
 # If there's no need to fit the script you can
 # directly execute this script by using:
-#   wget -O - http://scripts.pkern.at/nginx-update.sh | bash
+#   wget -O - https://raw.github.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
 #
 INSTALL="/srv/nginx"
 CONFDIR="$INSTALL/conf"
@@ -33,7 +34,7 @@ echo "[INFO] Be sure that your sources list is up2date!"
 echo "[INFO] Checking for required packages..."
 sleep 1
 
-packages=(git-core mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev)
+packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev)
 for pkg in "${packages[@]}"
 do
 	if ! dpkg-query -W $pkg &>/dev/null; then
@@ -113,7 +114,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
 		echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
 		cd $MODPATH/ngx_pagespeed/
-		wget -nv https://dl.google.com/dl/page-speed/psol/$PSOLVERSION.tar.gz
+		wget -nv http://dl.google.com/dl/page-speed/psol/$PSOLVERSION.tar.gz
 		mkdir -p $MODPATH/ngx_pagespeed/psol/
 		tar -xzvf $PSOLVERSION.tar.gz &>/dev/null
 		rm $PSOLVERSION.tar.gz
