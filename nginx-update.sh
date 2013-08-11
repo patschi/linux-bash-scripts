@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.1.0
-# Date...: 07.05.2013
+# Version: 1.1.1
+# Date...: 11.08.2013
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -12,6 +12,7 @@
 #   v1.0.2: Fixed update bug and check for the PSOL library
 #   v1.0.3: Using HTTP for PSOL library, using 'git' again, using github link
 #   v1.1.0: Check if ./configure was executed successfully or not
+#   v1.1.1: Updated PSOL version
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -40,7 +41,7 @@ echo "[INFO] Be sure that your sources list is up2date!"
 echo "[INFO] Checking for required packages..."
 sleep 1
 
-packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev)
+packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential)
 for pkg in "${packages[@]}"
 do
 	if ! dpkg-query -W $pkg &>/dev/null; then
@@ -116,7 +117,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 		git pull
 	fi
 
-	PSOLVERSION="1.5.27.2"
+	PSOLVERSION="1.6.29.5"
 	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
 		echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
 		cd $MODPATH/ngx_pagespeed/
@@ -149,7 +150,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 
 	echo "[INFO] Starting compiling..."
 	sleep 1
-	make
+	make CFLAGS='-Wunused'
 	make install
 
 	cp "$CONFDIR"/nginx.conf.b "$CONFDIR"/nginx.conf &>/dev/null
