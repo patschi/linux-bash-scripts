@@ -3,7 +3,7 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.1.0
+# Version: 1.1.1
 # Date...: 24.08.2013
 #
 # Changelog:
@@ -11,6 +11,7 @@
 #   v1.1.0: Fixed percent calculation
 #           Improved output of the infos
 #           Reduced executed commands
+#   v1.1.1: Removed current time from uptime
 #
 # Automically execute this script:
 #   echo "bash /path/to/script/logonScreen.sh" >> ~/.bashrc
@@ -82,9 +83,9 @@ echo -e "
  \e[0;31mHostname:           \t \e[0;36m $(hostname)
  \e[0;31mToday is:           \t \e[0;36m $(date)
  \e[0;31mKernel information: \t \e[0;36m $(uname -srm)
- \e[0;31mLoad average:       \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 4- | cut -c 3-)
- \e[0;31mCurrent uptime is:  \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 1,2 | cut -c 2- | sed 's/  / /g')
- \e[0;31mLogged in users:    \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 3 | cut -c 3-)
+ \e[0;31mLoad average:       \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 4- | cut -c3-)
+ \e[0;31mCurrent uptime is:  \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 1,2 | cut -c 2- | sed 's/  / /g' | cut -c13-)
+ \e[0;31mLogged in users:    \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 3 | cut -c3-)
  \e[0;31mRAM  usage:         \t \e[0;36m $(bytesFormat $RAM_USAGE) / $(bytesFormat $RAM_TOTAL) (${RAM_PERNT}%)
  \e[0;31mSWAP usage:         \t \e[0;36m $(bytesFormat $SWAP_USAGE) / $(bytesFormat $SWAP_TOTAL) (${SWAP_PERNT}%)
  \e[0;31mDISK usage:         \t \e[0;36m $(bytesFormat $DISK_USAGE) / $(bytesFormat $DISK_TOTAL) (${DISK_PERNT}%)
