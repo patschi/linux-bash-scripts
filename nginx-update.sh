@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.1.1
-# Date...: 11.08.2013
+# Version: 1.1.2
+# Date...: 23.10.2013
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -13,6 +13,7 @@
 #   v1.0.3: Using HTTP for PSOL library, using 'git' again, using github link
 #   v1.1.0: Check if ./configure was executed successfully or not
 #   v1.1.1: Updated PSOL version
+#   v1.1.2: Added missing package and do a "cd" to install directory
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -35,13 +36,15 @@ LOCKFILE="/var/run/nginx.lock"
 REVFILE="$INSTALL/rev.txt"
 VERFILE="$INSTALL/version.txt"
 MODPATH="$INSTALL/modules"
+PSOLVERSION="1.6.29.5"
 
 echo " "
 echo "[INFO] Be sure that your sources list is up2date!"
 echo "[INFO] Checking for required packages..."
 sleep 1
 
-packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential)
+cd "$INSTALL"
+packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential)
 for pkg in "${packages[@]}"
 do
 	if ! dpkg-query -W $pkg &>/dev/null; then
@@ -117,7 +120,6 @@ if [[ "$REV2" < "$REV1" ]]; then
 		git pull
 	fi
 
-	PSOLVERSION="1.6.29.5"
 	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
 		echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
 		cd $MODPATH/ngx_pagespeed/
