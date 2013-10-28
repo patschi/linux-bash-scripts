@@ -3,7 +3,7 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.1.3
+# Version: 1.2.0
 # Date...: 28.10.2013
 #
 # Changelog:
@@ -15,6 +15,7 @@
 #   v1.1.1: Updated PSOL version
 #   v1.1.2: Added missing package and do a "cd" to install directory
 #   v1.1.3: Updated PSOL version
+#   v1.2.0: Added more checks, if commands got executed successfully or not
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -154,10 +155,18 @@ if [[ "$REV2" < "$REV1" ]]; then
 	echo "[INFO] Starting compiling..."
 	sleep 1
 	make CFLAGS='-Wunused'
+	if [ ${?} -ne 0 ]; then
+		echo "[ERROR] Compiling failed. Aborting."
+		exit 1
+	fi
 	make install
+	if [ ${?} -ne 0 ]; then
+		echo "[ERROR] Installing failed. Aborting."
+		exit 1
+	fi
 
 	cp "$CONFDIR"/nginx.conf.b "$CONFDIR"/nginx.conf &>/dev/null
-	if command -v mail; then
+	if command -v mail &>/dev/null; then
 		echo "nginx was updated to version $NGINXVER (Revision $REV1)" | mail -s "nginx update" $MAIL
 	fi
 	echo "[INFO] Update completed."
