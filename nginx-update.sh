@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.2.0
-# Date...: 28.10.2013
+# Version: 1.2.1
+# Date...: 08.11.2013
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -16,6 +16,7 @@
 #   v1.1.2: Added missing package and do a "cd" to install directory
 #   v1.1.3: Updated PSOL version
 #   v1.2.0: Added more checks, if commands got executed successfully or not
+#   v1.2.1: Updated PSOL version
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -38,7 +39,7 @@ LOCKFILE="/var/run/nginx.lock"
 REVFILE="$INSTALL/rev.txt"
 VERFILE="$INSTALL/version.txt"
 MODPATH="$INSTALL/modules"
-PSOLVERSION="1.6.29.7"
+PSOLVERSION="1.7.30.1"
 
 echo " "
 echo "[INFO] Be sure that your sources list is up2date!"
