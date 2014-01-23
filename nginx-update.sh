@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.2.1
-# Date...: 08.11.2013
+# Version: 1.2.2
+# Date...: 23.01.2014
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -17,6 +17,7 @@
 #   v1.1.3: Updated PSOL version
 #   v1.2.0: Added more checks, if commands got executed successfully or not
 #   v1.2.1: Updated PSOL version
+#   v1.2.2: Updated PSOL version & using release git branch of ngx_pagespeed
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -39,7 +40,7 @@ LOCKFILE="/var/run/nginx.lock"
 REVFILE="$INSTALL/rev.txt"
 VERFILE="$INSTALL/version.txt"
 MODPATH="$INSTALL/modules"
-PSOLVERSION="1.7.30.1"
+PSOLVERSION="1.7.30.3"
 
 echo " "
 echo "[INFO] Be sure that your sources list is up2date!"
@@ -122,6 +123,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 		cd $MODPATH/ngx_pagespeed
 		git pull
 	fi
+	git checkout release-$PSOLVERSION-beta
 
 	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
 		echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
