@@ -27,6 +27,9 @@
 # directly execute this script by using:
 #   wget -O - https://raw.github.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
 #
+# Known issues:
+#  * Detection of current nginx sourcecode state is not working correctly. Reset saved revision by using "echo '0' > rev.txt" and re-execute script.
+#
 
 USER="www-data"
 GROUP="www-data"

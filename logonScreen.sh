@@ -3,8 +3,9 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.1.1
-# Date...: 24.08.2013
+# Version: 1.2.0
+# Date...: 24.02.2014
+# Licence: CC BY-SA 4.0
 #
 # Changelog:
 #   v1.0.0: First version (beta)
@@ -12,26 +13,47 @@
 #           Improved output of the infos
 #           Reduced executed commands
 #   v1.1.1: Removed current time from uptime
-#
-# Automically execute this script:
-#   echo "bash /path/to/script/logonScreen.sh" >> ~/.bashrc
+#   v1.2.0: General improvements
+#           Added licence
+#           Added operating system check
+#           Added updates notification
+#           Optimized dependencies checks
+#           Optimized uptime output
+#           Optimized current logged in users display
+#           Only use cal command, if cal is available
 #
 # To download the script you can use:
-#   wget https://raw.github.com/patschi/linux-bash-scripts/master/logonScreen.sh
+#   wget -O /opt/logonScreen.sh https://raw.github.com/patschi/linux-bash-scripts/master/logonScreen.sh
+#
+# Automically execute this script on logon of current user:
+#   echo "bash /opt/logonScreen.sh" >> ~/.bashrc
 #
 # Screenshot:
 #   https://raw.github.com/patschi/linux-bash-scripts/master/screenshot/LogonScreen.png
 #
 clear
 
+# CHECK FOR COMPATIBLE OPERATING SYSTEM
+if [ ! -f /etc/debian_version ]; then
+	echo >&2 "Sorry, but only Debian or Ubuntu are supported yet."
+	echo >&2 "Maybe different destributions may also work, so feel free to modify the script and to try it."
+	exit 1
+fi
+
 # CHECK FOR REQUIRED PACKAGES
-command -v figlet >/dev/null 2>&1 || {
-        echo >&2 "[MISSING] Required package 'figlet' is not installed. Installing..."
-        echo " "
-        sleep 1
-        apt-get install figlet -y
-        clear
-}
+if ! which figlet >/dev/null; then
+	echo >&2 "[MISSING] Required package 'figlet' is not installed. Installing..."
+	sleep 1
+	apt-get install figlet -y
+	sleep 1
+	echo -n "Continue? [Y/n] "
+	read -n1 input
+	if [ "x${input}" = "xn" -o "x${input}" = "xN" ]; then
+		echo " "
+		exit 0
+	fi
+	clear
+fi
 
 ## Function for human output
 bytesFormat()
@@ -54,7 +76,12 @@ bytesFormat()
 }
 
 # COMMANDS
-CMD_UPTIME=$(uptime)
+UPTIME=$(</proc/uptime)
+UPTIME=${UPTIME%%.*}
+UP_SECONDS=$((UPTIME%60))
+UP_MINUTES=$((UPTIME/60%60))
+UP_HOURS=$((UPTIME/60/60%24))
+UP_DAYS=$((UPTIME/60/60/24))
 
 # RAM / MEMORY
 RAM_FIELD=$(free | grep Mem | sed 's/ \+/ /g')
@@ -74,21 +101,36 @@ DISK_TOTAL=$(echo "$DISK_FIELD" | cut -d " " -f5)
 DISK_USAGE=$(echo "$DISK_FIELD" | cut -d " " -f4)
 DISK_PERNT=$(($DISK_USAGE * 10000 / $DISK_TOTAL / 100))
 
+# AVAILABLE UPDATES
+if which apt-get >/dev/null; then
+	UPD_PACKAGES=$(apt-get -s dist-upgrade | awk '/^Inst/ { print $2 }' | wc -l)
+	if [ "$UPD_PACKAGES" -gt "0" ]; then
+		UPD_PACKAGES="$UPD_PACKAGES (update recommended!)"
+	else
+		UPD_PACKAGES="$UPD_PACKAGES (well done!)"
+	fi
+else
+	UPD_PACKAGES="0 (not available)"
+fi
+
 echo " "
 # ASCII
 figlet -tk $(hostname) | sed 's/^/ /'
 
 # INFOS
 echo -e "
- \e[0;31mHostname:           \t \e[0;36m $(hostname)
+ \e[0;31mHostname:           \t \e[0;36m $(hostname -f)
  \e[0;31mToday is:           \t \e[0;36m $(date)
  \e[0;31mKernel information: \t \e[0;36m $(uname -srm)
- \e[0;31mLoad average:       \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 4- | cut -c3-)
- \e[0;31mCurrent uptime is:  \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 1,2 | cut -c 2- | sed 's/  / /g' | cut -c13-)
- \e[0;31mLogged in users:    \t \e[0;36m $(echo "$CMD_UPTIME" | cut -d , -f 3 | cut -c3-)
+ \e[0;31mAvailable updates:  \t \e[0;36m $UPD_PACKAGES
+ \e[0;31mLoad average:       \t \e[0;36m $(cat /proc/loadavg | cut -d " " -f -3)
+ \e[0;31mCurrent uptime is:  \t \e[0;36m $UP_DAYS days, $UP_HOURS hours, $UP_MINUTES minutes, $UP_SECONDS seconds
+ \e[0;31mLogged in users:    \t \e[0;36m $(who | wc -l)
  \e[0;31mRAM  usage:         \t \e[0;36m $(bytesFormat $RAM_USAGE) / $(bytesFormat $RAM_TOTAL) (${RAM_PERNT}%)
  \e[0;31mSWAP usage:         \t \e[0;36m $(bytesFormat $SWAP_USAGE) / $(bytesFormat $SWAP_TOTAL) (${SWAP_PERNT}%)
  \e[0;31mDISK usage:         \t \e[0;36m $(bytesFormat $DISK_USAGE) / $(bytesFormat $DISK_TOTAL) (${DISK_PERNT}%)
 \e[0;0m"
 
-cal -3
+if which cal >/dev/null; then
+	cal -3
+fi
