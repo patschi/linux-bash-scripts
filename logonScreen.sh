@@ -3,7 +3,7 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.2.0
+# Version: 1.2.1
 # Date...: 24.02.2014
 # Licence: CC BY-SA 4.0
 #
@@ -21,6 +21,7 @@
 #           Optimized uptime output
 #           Optimized current logged in users display
 #           Only use cal command, if cal is available
+#   v1.2.1: Added current username to logged in users line
 #
 # To download the script you can use:
 #   wget -O /opt/logonScreen.sh https://raw.github.com/patschi/linux-bash-scripts/master/logonScreen.sh
@@ -125,7 +126,7 @@ echo -e "
  \e[0;31mAvailable updates:  \t \e[0;36m $UPD_PACKAGES
  \e[0;31mLoad average:       \t \e[0;36m $(cat /proc/loadavg | cut -d " " -f -3)
  \e[0;31mCurrent uptime is:  \t \e[0;36m $UP_DAYS days, $UP_HOURS hours, $UP_MINUTES minutes, $UP_SECONDS seconds
- \e[0;31mLogged in users:    \t \e[0;36m $(who | wc -l)
+ \e[0;31mLogged in users:    \t \e[0;36m $(who | wc -l) (current: $(whoami))
  \e[0;31mRAM  usage:         \t \e[0;36m $(bytesFormat $RAM_USAGE) / $(bytesFormat $RAM_TOTAL) (${RAM_PERNT}%)
  \e[0;31mSWAP usage:         \t \e[0;36m $(bytesFormat $SWAP_USAGE) / $(bytesFormat $SWAP_TOTAL) (${SWAP_PERNT}%)
  \e[0;31mDISK usage:         \t \e[0;36m $(bytesFormat $DISK_USAGE) / $(bytesFormat $DISK_TOTAL) (${DISK_PERNT}%)
