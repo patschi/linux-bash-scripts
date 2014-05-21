@@ -136,6 +136,16 @@ if [[ "$REV2" < "$REV1" ]]; then
 		tar -xzvf $PSOLVERSION.tar.gz &>/dev/null
 		rm $PSOLVERSION.tar.gz
 	fi
+	
+	cd $MODPATH
+	if [ ! -d $MODPATH/nginx-sticky-module-ng/.git ]; then
+		rm $MODPATH/nginx-sticky-module-ng -R &>/dev/null
+		git clone https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng.git
+		echo " "
+	else
+		cd $MODPATH/nginx-sticky-module-ng
+		git pull
+	fi
 
 	echo " "
 	echo "[INFO] Updateing nginx..."
@@ -152,7 +162,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 	cd $INSTALL/source/
 	echo "[INFO] Configuring..."
 	sleep 1
-	./auto/configure --user="$USER" --group="$GROUP" --with-cpu-opt="$CPUOPT" --prefix="$INSTALL" --pid-path="$PIDFILE" --lock-path="$LOCKFILE" --with-http_spdy_module --with-http_image_filter_module --with-http_geoip_module --with-http_xslt_module --with-rtsig_module --with-poll_module --with-http_sub_module --with-http_flv_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_stub_status_module --with-file-aio --with-ipv6 --with-http_realip_module --with-http_addition_module --with-select_module --with-http_ssl_module --with-libatomic --with-debug --add-module="$MODPATH"/headers-more-nginx-module --add-module="$MODPATH"/ngx_pagespeed --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module
+	./auto/configure --user="$USER" --group="$GROUP" --with-cpu-opt="$CPUOPT" --prefix="$INSTALL" --pid-path="$PIDFILE" --lock-path="$LOCKFILE" --with-http_spdy_module --with-http_image_filter_module --with-http_geoip_module --with-http_xslt_module --with-rtsig_module --with-poll_module --with-http_sub_module --with-http_flv_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_stub_status_module --with-file-aio --with-ipv6 --with-http_realip_module --with-http_addition_module --with-select_module --with-http_ssl_module --with-libatomic --with-debug --add-module="$MODPATH"/headers-more-nginx-module --add-module="$MODPATH"/ngx_pagespeed --add-module="$MODPATH"/nginx-sticky-module-ng --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module
 	if [ ${?} -ne 0 ]; then
 		echo "[ERROR] Configuration failed. Aborting."
 		exit 1
