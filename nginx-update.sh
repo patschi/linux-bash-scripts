@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.2.2
-# Date...: 23.01.2014
+# Version: 1.2.3
+# Date...: 21.05.2014
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -18,6 +18,7 @@
 #   v1.2.0: Added more checks, if commands got executed successfully or not
 #   v1.2.1: Updated PSOL version
 #   v1.2.2: Updated PSOL version & using release git branch of ngx_pagespeed
+#   v1.2.3: Updated PSOL version, added nginx-sticky-module-ng to compile script, removed useless lines
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -28,7 +29,8 @@
 #   wget -O - https://raw.github.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
 #
 # Known issues:
-#  * Detection of current nginx sourcecode state is not working correctly. Reset saved revision by using "echo '0' > rev.txt" and re-execute script.
+#  * Detection of current nginx sourcecode state is not working correctly. 
+#    Reset saved revision by using "echo '0' > rev.txt" and re-execute script.
 #
 
 USER="www-data"
@@ -43,7 +45,7 @@ LOCKFILE="/var/run/nginx.lock"
 REVFILE="$INSTALL/rev.txt"
 VERFILE="$INSTALL/version.txt"
 MODPATH="$INSTALL/modules"
-PSOLVERSION="1.7.30.3"
+PSOLVERSION="1.8.31.2"
 
 echo " "
 echo "[INFO] Be sure that your sources list is up2date!"
@@ -81,6 +83,7 @@ echo "    The script is only updating, if a"
 echo "    new update is available."
 echo " "
 sleep 2
+
 cd $INSTALL
 if [ ! -d $INSTALL/source/.hg ]; then
 	rm $INSTALL/source/ -R &>/dev/null
@@ -96,6 +99,9 @@ fi
 
 REV1=`hg id -n $INSTALL/source/ | sed "s/+//g"`
 REV2=`cat $REVFILE`
+
+# overwriting rev to 0, to force update
+REV2='0'
 
 NGINXVER=`strings $SBINDIR/nginx | grep 'nginx version: nginx' | cut -c22-`
 if [[ "$REV2" < "$REV1" ]]; then
@@ -154,11 +160,6 @@ if [[ "$REV2" < "$REV1" ]]; then
 	rm $CONFDIR/nginx.conf.b &>/dev/null
 	cp $CONFDIR/nginx.conf $CONFDIR/nginx.conf.b &>/dev/null
 
-	# Change internal verison in the sourcecode
-	#  cd $INSTALL/source/src/http/
-	#  sed -i "s/static char ngx\_http\_server\_string\[\] \= \"Server\: nginx\" CRLF\;/static char ngx\_http\_server\_string\[\] \= \"Server\: \'\; DROP TABLE servertypes\; \-\-\" CRLF\;/g" ngx_http_header_filter_module.c
-	#  sed -i "s/static char ngx\_http\_server\_full\_string\[\] \= \"Server\: \" NGINX\_VER CRLF\;/static char ngx\_http\_server\_full\_string\[\] \= \"Server\: \'\; DROP TABLE servertypes\; \-\-\" CRLF\;/g" ngx_http_header_filter_module.c
-
 	cd $INSTALL/source/
 	echo "[INFO] Configuring..."
 	sleep 1
@@ -182,9 +183,6 @@ if [[ "$REV2" < "$REV1" ]]; then
 	fi
 
 	cp "$CONFDIR"/nginx.conf.b "$CONFDIR"/nginx.conf &>/dev/null
-	if command -v mail &>/dev/null; then
-		echo "nginx was updated to version $NGINXVER (Revision $REV1)" | mail -s "nginx update" $MAIL
-	fi
 	echo "[INFO] Update completed."
 
 else
