@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.2.3
-# Date...: 21.05.2014
+# Version: 1.3.0
+# Date...: 02.09.2014
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -19,6 +19,7 @@
 #   v1.2.1: Updated PSOL version
 #   v1.2.2: Updated PSOL version & using release git branch of ngx_pagespeed
 #   v1.2.3: Updated PSOL version, added nginx-sticky-module-ng to compile script, removed useless lines
+#   v1.3.0: Updated PSOL version, added nginx-length-hiding-filter-module to compile script, updated init.d link and added curl
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -29,8 +30,9 @@
 #   wget -O - https://raw.github.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
 #
 # Known issues:
-#  * Detection of current nginx sourcecode state is not working correctly. 
+#  * Detection of current nginx sourcecode state is not working correctly.
 #    Reset saved revision by using "echo '0' > rev.txt" and re-execute script.
+#    Workaround: Force update everytime.
 #
 
 USER="www-data"
@@ -45,7 +47,12 @@ LOCKFILE="/var/run/nginx.lock"
 REVFILE="$INSTALL/rev.txt"
 VERFILE="$INSTALL/version.txt"
 MODPATH="$INSTALL/modules"
-PSOLVERSION="1.8.31.2"
+PSOLVERSION="1.8.31.4"
+
+PKNGX="0"
+if [ $1 = "pkngx" ]; then
+	PKNGX="1"
+fi
 
 echo " "
 echo "[INFO] Be sure that your sources list is up2date!"
@@ -53,7 +60,7 @@ echo "[INFO] Checking for required packages..."
 sleep 1
 
 cd "$INSTALL"
-packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential)
+packages=(curl git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential)
 for pkg in "${packages[@]}"
 do
 	if ! dpkg-query -W $pkg &>/dev/null; then
@@ -66,42 +73,44 @@ done
 if [ ! -f /etc/init.d/nginx ]; then
 	echo " "
 	echo "[INFO] Missing nginx-initd script. Downloading..."
-	rm /tmp/initd-nginx.txt &>/dev/null
-	wget -q -P /tmp http://pkern.at/nginx/initd-nginx.txt
-	sed -i 's|lockfile=/var/lock/nginx.lock|lockfile='$LOCKFILE'|g' /tmp/initd-nginx.txt
-	sed -i 's|NGINX_CONF_FILE="/srv/nginx/conf/nginx.conf"|NGINX_CONF_FILE="'$CONFDIR'/nginx.conf"|g' /tmp/initd-nginx.txt
-	mv /tmp/initd-nginx.txt /etc/init.d/nginx
+	rm /etc/init.d/nginx
+	curl --insecure https://pkern.at/nginx/initd-nginx.txt > /etc/init.d/nginx
+	sed -i 's|lockfile=/var/lock/nginx.lock|lockfile='$LOCKFILE'|g' /etc/init.d/nginx
+	sed -i 's|NGINX_CONF_FILE="/srv/nginx/conf/nginx.conf"|NGINX_CONF_FILE="'$CONFDIR'/nginx.conf"|g' /etc/init.d/nginx
 	chmod +x /etc/init.d/nginx
 fi
 
 echo " "
 echo "[INFO] Downloading source..."
 echo " "
-echo "    The nginx source is needed to"
-echo "    get the latest revision number."
-echo "    The script is only updating, if a"
-echo "    new update is available."
-echo " "
 sleep 2
 
 cd $INSTALL
-if [ ! -d $INSTALL/source/.hg ]; then
-	rm $INSTALL/source/ -R &>/dev/null
-	hg clone http://hg.nginx.org/nginx/ $INSTALL/source/
-else
-	cd source
-	hg update
-fi
+#if [ ! -d $INSTALL/source/.hg ]; then
+#	rm $INSTALL/source/ -R &>/dev/null
+#	hg clone http://hg.nginx.org/nginx/ $INSTALL/source/
+#else
+#	cd source
+#	hg update
+#fi
+
+rm source/ -R
+rm nginx*.tar.gz
+NGINXVER="1.7.4"
+wget http://nginx.org/download/nginx-$NGINXVER.tar.gz
+tar xfz nginx-$NGINXVER.tar.gz
+mv nginx-$NGINXVER/ source/
 
 if [ ! -f $REVFILE ]; then
 	echo "0" > $REVFILE
 fi
 
-REV1=`hg id -n $INSTALL/source/ | sed "s/+//g"`
-REV2=`cat $REVFILE`
+#REV1=`hg id -n $INSTALL/source/ | sed "s/+//g"`
+#REV2=`cat $REVFILE`
 
 # overwriting rev to 0, to force update
-REV2='0'
+REV1="1"
+REV2="0"
 
 NGINXVER=`strings $SBINDIR/nginx | grep 'nginx version: nginx' | cut -c22-`
 if [[ "$REV2" < "$REV1" ]]; then
@@ -125,6 +134,26 @@ if [[ "$REV2" < "$REV1" ]]; then
 	fi
 
 	cd $MODPATH
+	if [ ! -d $MODPATH/nginx-length-hiding-filter-module/.git ]; then
+		rm $MODPATH/nginx-length-hiding-filter-module -R &>/dev/null
+		git clone https://github.com/nulab/nginx-length-hiding-filter-module.git
+		echo " "
+	else
+		cd $MODPATH/nginx-length-hiding-filter-module
+		git pull
+	fi
+
+	cd $MODPATH
+	if [ ! -d $MODPATH/nginx-sticky-module-ng/.git ]; then
+		rm $MODPATH/nginx-sticky-module-ng -R &>/dev/null
+		git clone https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng.git
+		echo " "
+	else
+		cd $MODPATH/nginx-sticky-module-ng
+		git pull
+	fi
+
+	cd $MODPATH
 	if [ ! -d $MODPATH/ngx_pagespeed/.git ]; then
 		rm $MODPATH/ngx_pagespeed -R &>/dev/null
 		git clone https://github.com/pagespeed/ngx_pagespeed.git
@@ -142,16 +171,6 @@ if [[ "$REV2" < "$REV1" ]]; then
 		tar -xzvf $PSOLVERSION.tar.gz &>/dev/null
 		rm $PSOLVERSION.tar.gz
 	fi
-	
-	cd $MODPATH
-	if [ ! -d $MODPATH/nginx-sticky-module-ng/.git ]; then
-		rm $MODPATH/nginx-sticky-module-ng -R &>/dev/null
-		git clone https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng.git
-		echo " "
-	else
-		cd $MODPATH/nginx-sticky-module-ng
-		git pull
-	fi
 
 	echo " "
 	echo "[INFO] Updateing nginx..."
@@ -160,10 +179,26 @@ if [[ "$REV2" < "$REV1" ]]; then
 	rm $CONFDIR/nginx.conf.b &>/dev/null
 	cp $CONFDIR/nginx.conf $CONFDIR/nginx.conf.b &>/dev/null
 
+	if [ $PKNGX = "1" ]; then
+		echo "[INFO] Changing nginx version to 'pkern-nginx'..."
+		# Change internal verison in the sourcecode
+		sed -i "s/static char ngx\_http\_server\_string\[\] \= \"Server\: nginx\" CRLF\;/static char ngx\_http\_server\_string\[\] \= \"Server\: pkern\-nginx\" CRLF\;/g" $INSTALL/source/src/http/ngx_http_header_filter_module.c
+		sed -i "s/#define NGINX_VER          \"nginx\/\" NGINX_VERSION/#define NGINX_VER          \"pkern-nginx\/\" NGINX_VERSION/g" $INSTALL/source/src/core/nginx.h
+		sleep 1
+	fi
+
 	cd $INSTALL/source/
+
 	echo "[INFO] Configuring..."
 	sleep 1
-	./auto/configure --user="$USER" --group="$GROUP" --with-cpu-opt="$CPUOPT" --prefix="$INSTALL" --pid-path="$PIDFILE" --lock-path="$LOCKFILE" --with-http_spdy_module --with-http_image_filter_module --with-http_geoip_module --with-http_xslt_module --with-rtsig_module --with-poll_module --with-http_sub_module --with-http_flv_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_stub_status_module --with-file-aio --with-ipv6 --with-http_realip_module --with-http_addition_module --with-select_module --with-http_ssl_module --with-libatomic --with-debug --add-module="$MODPATH"/headers-more-nginx-module --add-module="$MODPATH"/ngx_pagespeed --add-module="$MODPATH"/nginx-sticky-module-ng --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module
+
+	if [ -f "./auto/configure" ]; then
+		CONFIGURE="./auto/configure"
+	else
+		CONFIGURE="./configure"
+	fi
+
+	$CONFIGURE --user="$USER" --group="$GROUP" --with-cpu-opt="$CPUOPT" --prefix="$INSTALL" --pid-path="$PIDFILE" --lock-path="$LOCKFILE" --with-http_spdy_module --with-http_image_filter_module --with-http_geoip_module --with-http_xslt_module --with-rtsig_module --with-poll_module --with-http_sub_module --with-http_flv_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_stub_status_module --with-file-aio --with-ipv6 --with-http_realip_module --with-http_addition_module --with-select_module --with-http_ssl_module --with-libatomic --with-debug --add-module="$MODPATH"/headers-more-nginx-module --add-module="$MODPATH"/nginx-length-hiding-filter-module --add-module="$MODPATH"/ngx_pagespeed --add-module="$MODPATH"/nginx-sticky-module-ng --without-mail_pop3_module --without-mail_imap_module --without-mail_smtp_module
 	if [ ${?} -ne 0 ]; then
 		echo "[ERROR] Configuration failed. Aborting."
 		exit 1
@@ -183,10 +218,12 @@ if [[ "$REV2" < "$REV1" ]]; then
 	fi
 
 	cp "$CONFDIR"/nginx.conf.b "$CONFDIR"/nginx.conf &>/dev/null
+	echo
 	echo "[INFO] Update completed."
 
 else
- echo "[DONE] Nothing to update."
+	echo
+	echo "[DONE] Nothing to update."
 fi
 
 if [[ $REV1 > $REV2 ]]; then
@@ -195,6 +232,8 @@ fi
 
 echo "$REV1" > "$REVFILE"
 echo "$NGINXVER|$REV1" > "$VERFILE"
+
+echo
 echo "[DONE] Finished."
 
 exit 0
