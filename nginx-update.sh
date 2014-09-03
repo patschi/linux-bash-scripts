@@ -50,7 +50,7 @@ MODPATH="$INSTALL/modules"
 PSOLVERSION="1.8.31.4"
 
 PKNGX="0"
-if [ $1 = "pkngx" ]; then
+if [ "$1" = "pkngx" ]; then
 	PKNGX="1"
 fi
 
@@ -60,7 +60,7 @@ echo "[INFO] Checking for required packages..."
 sleep 1
 
 cd "$INSTALL"
-packages=(curl git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential)
+packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential curl)
 for pkg in "${packages[@]}"
 do
 	if ! dpkg-query -W $pkg &>/dev/null; then
