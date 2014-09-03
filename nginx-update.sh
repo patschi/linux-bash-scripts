@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.3.0
-# Date...: 02.09.2014
+# Version: 1.3.1
+# Date...: 03.09.2014
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -20,6 +20,7 @@
 #   v1.2.2: Updated PSOL version & using release git branch of ngx_pagespeed
 #   v1.2.3: Updated PSOL version, added nginx-sticky-module-ng to compile script, removed useless lines
 #   v1.3.0: Updated PSOL version, added nginx-length-hiding-filter-module to compile script, updated init.d link and added curl
+#   v1.3.1: Added psmisc dependency (includes the command killall for the init.d script)
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -60,7 +61,7 @@ echo "[INFO] Checking for required packages..."
 sleep 1
 
 cd "$INSTALL"
-packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential curl)
+packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential curl psmisc)
 for pkg in "${packages[@]}"
 do
 	if ! dpkg-query -W $pkg &>/dev/null; then
