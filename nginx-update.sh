@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.3.1
-# Date...: 03.09.2014
+# Version: 1.3.2
+# Date...: 17.09.2014
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -21,6 +21,7 @@
 #   v1.2.3: Updated PSOL version, added nginx-sticky-module-ng to compile script, removed useless lines
 #   v1.3.0: Updated PSOL version, added nginx-length-hiding-filter-module to compile script, updated init.d link and added curl
 #   v1.3.1: Added psmisc dependency (includes the command killall for the init.d script)
+#   v1.3.2: Updated PSOL and nginx version, removed "--with-debug" due build errors
 #
 # I'm not responsible for any damage.
 # Don't forget to change the variables
@@ -36,6 +37,9 @@
 #    Workaround: Force update everytime.
 #
 
+PSOLVERSION="1.9.32.1"
+NGNXVERSION="1.7.5"
+
 USER="www-data"
 GROUP="www-data"
 CPUOPT="amd64"
@@ -48,7 +52,6 @@ LOCKFILE="/var/run/nginx.lock"
 REVFILE="$INSTALL/rev.txt"
 VERFILE="$INSTALL/version.txt"
 MODPATH="$INSTALL/modules"
-PSOLVERSION="1.8.31.4"
 
 PKNGX="0"
 if [ "$1" = "pkngx" ]; then
@@ -97,10 +100,10 @@ cd $INSTALL
 
 rm source/ -R
 rm nginx*.tar.gz
-NGINXVER="1.7.4"
-wget http://nginx.org/download/nginx-$NGINXVER.tar.gz
-tar xfz nginx-$NGINXVER.tar.gz
-mv nginx-$NGINXVER/ source/
+
+wget http://nginx.org/download/nginx-$NGNXVERSION.tar.gz
+tar xfz nginx-$NGNXVERSION.tar.gz
+mv nginx-$NGNXVERSION/ source/
 
 if [ ! -f $REVFILE ]; then
 	echo "0" > $REVFILE
@@ -162,10 +165,11 @@ if [[ "$REV2" < "$REV1" ]]; then
 		cd $MODPATH/ngx_pagespeed
 		git pull
 	fi
+	cd $MODPATH/ngx_pagespeed
 	git checkout release-$PSOLVERSION-beta
 
 	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
-		echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
+		echo && echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
 		cd $MODPATH/ngx_pagespeed/
 		wget -nv http://dl.google.com/dl/page-speed/psol/$PSOLVERSION.tar.gz
 		mkdir -p $MODPATH/ngx_pagespeed/psol/
@@ -232,7 +236,7 @@ if [[ $REV1 > $REV2 ]]; then
 fi
 
 echo "$REV1" > "$REVFILE"
-echo "$NGINXVER|$REV1" > "$VERFILE"
+echo "$NGNXVERSION|$REV1" > "$VERFILE"
 
 echo
 echo "[DONE] Finished."
