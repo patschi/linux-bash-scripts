@@ -3,8 +3,15 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.3.2
-# Date...: 17.09.2014
+# Version: 1.3.3
+# Date...: 29.09.2014
+#
+# Description:
+#  Does install nginx from ground up or update a already existing installation, which was installed
+#  with this script or is basically identical with the settings below.
+#
+#  I'm not responsible for any damage. Don't forget to change the variables
+#  to your needs (but it should basically fit for default).
 #
 # Changelog:
 #   v1.0.0: First version.
@@ -21,22 +28,27 @@
 #   v1.2.3: Updated PSOL version, added nginx-sticky-module-ng to compile script, removed useless lines
 #   v1.3.0: Updated PSOL version, added nginx-length-hiding-filter-module to compile script, updated init.d link and added curl
 #   v1.3.1: Added psmisc dependency (includes the command killall for the init.d script)
-#   v1.3.2: Updated PSOL and nginx version, removed "--with-debug" due build errors
+#   v1.3.2: Updated PSOL and nginx version
+#   v1.3.3: Updated installation routine of packages, creating required folders first, general changes
 #
-# I'm not responsible for any damage.
-# Don't forget to change the variables
-# to your needs.
-#
-# If there's no need to fit the script you can
-# directly execute this script by using:
-#   wget -O - https://raw.github.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
+# If there's no need to change something in the script you can directly execute this script by using:
+#   wget -O - https://raw.githubusercontent.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
 #
 # Known issues:
-#  * Detection of current nginx sourcecode state is not working correctly.
-#    Reset saved revision by using "echo '0' > rev.txt" and re-execute script.
-#    Workaround: Force update everytime.
+#  * Detection of current nginx version of the source code is not working correctly.
+#    Workaround: Reset saved revision by using "echo '0' > rev.txt" to force update everytime.
+#  * If the build fails any you see any error related to "instaweb" or something, try
+#    to delete the modules/ngx_pagespeed/psol/ directory manually and try it again.
+#
+# Current limitations:
+#  * Only x64 bit machines are currently supported (not planned to extend support to x32 machines)
+#
+# TODO
+#  * Automically retrieve latest versions
+#  * Only update when it's required
 #
 
+### SETTINGS
 PSOLVERSION="1.9.32.1"
 NGNXVERSION="1.7.5"
 
@@ -47,11 +59,13 @@ CPUOPT="amd64"
 INSTALL="/srv/nginx"
 CONFDIR="$INSTALL/conf"
 SBINDIR="$INSTALL/sbin"
+LOGDIR="/var/log/nginx"
 PIDFILE="/var/run/nginx.pid"
 LOCKFILE="/var/run/nginx.lock"
 REVFILE="$INSTALL/rev.txt"
 VERFILE="$INSTALL/version.txt"
 MODPATH="$INSTALL/modules"
+### SETTINGS END
 
 PKNGX="0"
 if [ "$1" = "pkngx" ]; then
@@ -59,20 +73,14 @@ if [ "$1" = "pkngx" ]; then
 fi
 
 echo " "
-echo "[INFO] Be sure that your sources list is up2date!"
-echo "[INFO] Checking for required packages..."
+echo "[INFO] Updating packages list..."
+apt-get update
+
+echo "[INFO] Installing required packages..."
 sleep 1
 
-cd "$INSTALL"
-packages=(git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg62-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential curl psmisc)
-for pkg in "${packages[@]}"
-do
-	if ! dpkg-query -W $pkg &>/dev/null; then
-		echo " "
-		echo "[INFO] Missing required package '$pkg'. Installing..."
-		apt-get install -qq $pkg
-	fi
-done
+packages="git mercurial libatomic-ops-dev libbz2-dev libexpat1-dev libfontconfig1-dev libfreetype6-dev libgcrypt11-dev libpcre++-dev libgd2-xpm-dev libgeoip-dev libglib2.0-dev libgmp3-dev libgpg-error-dev libjpeg8-dev libpcre3 libpcre3-dev libpng12-dev libpthread-stubs0-dev libssl-dev libstdc++6-4.4-dev libxalan110-dev libxerces-c2-dev libxml2-dev libxpm-dev libxslt1-dev linux-libc-dev zlib1g-dev build-essential curl psmisc"
+DEBIAN_FRONTEND=noninteractive apt-get install --force-yes --assume-yes $packages
 
 if [ ! -f /etc/init.d/nginx ]; then
 	echo " "
@@ -84,10 +92,21 @@ if [ ! -f /etc/init.d/nginx ]; then
 	chmod +x /etc/init.d/nginx
 fi
 
+cd "$INSTALL"
 echo " "
 echo "[INFO] Downloading source..."
 echo " "
 sleep 2
+
+if [ ! -d $INSTALL ]; then
+	echo "[INFO] Creating installation directory..."
+	mkdir -p $INSTALL
+fi
+
+if [ ! -d $LOGDIR ]; then
+	echo "[INFO] Creating log directory..."
+	mkdir -p $LOGDIR
+fi
 
 cd $INSTALL
 #if [ ! -d $INSTALL/source/.hg ]; then
@@ -180,7 +199,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 	echo " "
 	echo "[INFO] Updateing nginx..."
 	sleep 1
-	NGINXOLDVER=`strings $SBINDIR/nginx | grep 'nginx version: nginx' | cut -c22-`
+	NGINXOLDVER=`strings $SBINDIR/nginx 2>/dev/null | grep 'nginx version: nginx' | cut -c22-`
 	rm $CONFDIR/nginx.conf.b &>/dev/null
 	cp $CONFDIR/nginx.conf $CONFDIR/nginx.conf.b &>/dev/null
 
