@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.3.3
-# Date...: 29.09.2014
+# Version: 1.3.4
+# Date...: 05.12.2014
 #
 # Description:
 #  Does install nginx from ground up or update a already existing installation, which was installed
@@ -30,6 +30,7 @@
 #   v1.3.1: Added psmisc dependency (includes the command killall for the init.d script)
 #   v1.3.2: Updated PSOL and nginx version
 #   v1.3.3: Updated installation routine of packages, creating required folders first, general changes
+#	v1.3.4: Updated PSOL and nginx version
 #
 # If there's no need to change something in the script you can directly execute this script by using:
 #   wget -O - https://raw.githubusercontent.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
@@ -49,8 +50,8 @@
 #
 
 ### SETTINGS
-PSOLVERSION="1.9.32.1"
-NGNXVERSION="1.7.5"
+PSOLVERSION="1.9.32.2"
+NGNXVERSION="1.7.8"
 
 USER="www-data"
 GROUP="www-data"
@@ -138,7 +139,7 @@ REV2="0"
 NGINXVER=`strings $SBINDIR/nginx | grep 'nginx version: nginx' | cut -c22-`
 if [[ "$REV2" < "$REV1" ]]; then
 	echo " "
-	echo "[INFO] Updateing modules..."
+	echo "[INFO] Updating modules..."
 	echo " "
 	sleep 1
 
@@ -197,7 +198,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 	fi
 
 	echo " "
-	echo "[INFO] Updateing nginx..."
+	echo "[INFO] Updating nginx..."
 	sleep 1
 	NGINXOLDVER=`strings $SBINDIR/nginx 2>/dev/null | grep 'nginx version: nginx' | cut -c22-`
 	rm $CONFDIR/nginx.conf.b &>/dev/null
