@@ -30,7 +30,7 @@
 #   v1.3.1: Added psmisc dependency (includes the command killall for the init.d script)
 #   v1.3.2: Updated PSOL and nginx version
 #   v1.3.3: Updated installation routine of packages, creating required folders first, general changes
-#	v1.3.4: Updated PSOL and nginx version
+#   v1.3.4: Updated PSOL and nginx version
 #
 # If there's no need to change something in the script you can directly execute this script by using:
 #   wget -O - https://raw.githubusercontent.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
