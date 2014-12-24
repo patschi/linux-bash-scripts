@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.3.4
-# Date...: 05.12.2014
+# Version: 1.3.5
+# Date...: 24.12.2014
 #
 # Description:
 #  Does install nginx from ground up or update a already existing installation, which was installed
@@ -31,6 +31,7 @@
 #   v1.3.2: Updated PSOL and nginx version
 #   v1.3.3: Updated installation routine of packages, creating required folders first, general changes
 #   v1.3.4: Updated PSOL and nginx version
+#   v1.3.5: Updated PSOL and nginx version
 #
 # If there's no need to change something in the script you can directly execute this script by using:
 #   wget -O - https://raw.githubusercontent.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
@@ -50,8 +51,8 @@
 #
 
 ### SETTINGS
-PSOLVERSION="1.9.32.2"
-NGNXVERSION="1.7.8"
+PSOLVERSION="1.9.32.3-beta"
+NGNXVERSION="1.7.9"
 
 USER="www-data"
 GROUP="www-data"
@@ -186,7 +187,7 @@ if [[ "$REV2" < "$REV1" ]]; then
 		git pull
 	fi
 	cd $MODPATH/ngx_pagespeed
-	git checkout release-$PSOLVERSION-beta
+	git checkout release-$PSOLVERSION
 
 	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
 		echo && echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
