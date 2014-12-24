@@ -3,7 +3,7 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.3.5
+# Version: 1.4.0
 # Date...: 24.12.2014
 #
 # Description:
@@ -32,6 +32,7 @@
 #   v1.3.3: Updated installation routine of packages, creating required folders first, general changes
 #   v1.3.4: Updated PSOL and nginx version
 #   v1.3.5: Updated PSOL and nginx version
+#   v1.4.0: Some fixes and improvements
 #
 # If there's no need to change something in the script you can directly execute this script by using:
 #   wget -O - https://raw.githubusercontent.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
@@ -51,8 +52,9 @@
 #
 
 ### SETTINGS
-PSOLVERSION="1.9.32.3-beta"
-NGNXVERSION="1.7.9"
+VERSION_NGPS="release-1.9.32.3-beta" # pagespeed github version
+VERSION_PSOL="1.9.32.2"              # PSOL version
+VERSION_NGNX="1.7.9"                 # nginx version
 
 USER="www-data"
 GROUP="www-data"
@@ -122,9 +124,9 @@ cd $INSTALL
 rm source/ -R
 rm nginx*.tar.gz
 
-wget http://nginx.org/download/nginx-$NGNXVERSION.tar.gz
-tar xfz nginx-$NGNXVERSION.tar.gz
-mv nginx-$NGNXVERSION/ source/
+wget http://nginx.org/download/nginx-$VERSION_NGNX.tar.gz
+tar xfz nginx-$VERSION_NGNX.tar.gz
+mv nginx-$VERSION_NGNX/ source/
 
 if [ ! -f $REVFILE ]; then
 	echo "0" > $REVFILE
@@ -187,15 +189,17 @@ if [[ "$REV2" < "$REV1" ]]; then
 		git pull
 	fi
 	cd $MODPATH/ngx_pagespeed
-	git checkout release-$PSOLVERSION
+	git checkout $VERSION_NGPS
 
+	rm $MODPATH/ngx_pagespeed/psol -Rf # remove directory to force PSOL update. Just a workaround.
 	if [ ! -d $MODPATH/ngx_pagespeed/psol ]; then
-		echo && echo "[INFO] Downloading and extracting pagespeed $PSOLVERSION library..."
+		echo && echo "[INFO] Downloading and extracting pagespeed $VERSION_PSOL library..."
 		cd $MODPATH/ngx_pagespeed/
-		wget -nv http://dl.google.com/dl/page-speed/psol/$PSOLVERSION.tar.gz
+		wget http://dl.google.com/dl/page-speed/psol/$VERSION_PSOL.tar.gz
 		mkdir -p $MODPATH/ngx_pagespeed/psol/
-		tar -xzvf $PSOLVERSION.tar.gz &>/dev/null
-		rm $PSOLVERSION.tar.gz
+		tar -xzvf $VERSION_PSOL.tar.gz &>/dev/null
+		echo $VERSION_PSOL > version.txt
+		rm $VERSION_PSOL.tar.gz
 	fi
 
 	echo " "
@@ -257,7 +261,7 @@ if [[ $REV1 > $REV2 ]]; then
 fi
 
 echo "$REV1" > "$REVFILE"
-echo "$NGNXVERSION|$REV1" > "$VERFILE"
+echo "$VERSION_NGNX|$REV1" > "$VERFILE"
 
 echo
 echo "[DONE] Finished."
