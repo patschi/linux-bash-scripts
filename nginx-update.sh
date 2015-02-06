@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.4.0
-# Date...: 24.12.2014
+# Version: 1.4.1
+# Date...: 06.02.2014
 #
 # Description:
 #  Does install nginx from ground up or update a already existing installation, which was installed
@@ -33,6 +33,7 @@
 #   v1.3.4: Updated PSOL and nginx version
 #   v1.3.5: Updated PSOL and nginx version
 #   v1.4.0: Some fixes and improvements
+#   v1.4.1: Enable autostart of nginx after init.d script installation
 #
 # If there's no need to change something in the script you can directly execute this script by using:
 #   wget -O - https://raw.githubusercontent.com/patschi/linux-bash-scripts/master/nginx-update.sh | bash
@@ -94,6 +95,7 @@ if [ ! -f /etc/init.d/nginx ]; then
 	sed -i 's|lockfile=/var/lock/nginx.lock|lockfile='$LOCKFILE'|g' /etc/init.d/nginx
 	sed -i 's|NGINX_CONF_FILE="/srv/nginx/conf/nginx.conf"|NGINX_CONF_FILE="'$CONFDIR'/nginx.conf"|g' /etc/init.d/nginx
 	chmod +x /etc/init.d/nginx
+	update-rc.d nginx defaults
 fi
 
 cd "$INSTALL"
