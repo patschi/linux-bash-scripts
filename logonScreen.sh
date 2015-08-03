@@ -3,8 +3,8 @@
 # (C) Patrik Kernstock
 #  Website: pkern.at
 #
-# Version: 1.2.1
-# Date...: 24.02.2014
+# Version: 1.3.0
+# Date...: 03.08.2014
 # Licence: CC BY-SA 4.0
 #
 # Changelog:
@@ -22,6 +22,10 @@
 #           Optimized current logged in users display
 #           Only use cal command, if cal is available
 #   v1.2.1: Added current username to logged in users line
+#   v1.3.0: Added package "bc" to dependencies and install it
+#            automatically if it is missing
+#           Added a check if the machine is OpenVZ to get correct
+#            disk usage values
 #
 # To download the script you can use:
 #   wget -O /opt/logonScreen.sh https://raw.github.com/patschi/linux-bash-scripts/master/logonScreen.sh
@@ -31,6 +35,10 @@
 #
 # Screenshot:
 #   https://raw.github.com/patschi/linux-bash-scripts/master/screenshot/LogonScreen.png
+#
+# Notes:
+#  If you can't see the nice terminal calendar like on the screenshot and you want the calendar,
+#  you need to ensure that you have the "cal" binary installed. 
 #
 clear
 
@@ -47,12 +55,14 @@ if ! which figlet >/dev/null; then
 	sleep 1
 	apt-get install figlet -y
 	sleep 1
-	echo -n "Continue? [Y/n] "
-	read -n1 input
-	if [ "x${input}" = "xn" -o "x${input}" = "xN" ]; then
-		echo " "
-		exit 0
-	fi
+	clear
+fi
+
+if ! which bc >/dev/null; then
+	echo >&2 "[MISSING] Required package 'bc' is not installed. Installing..."
+	sleep 1
+	apt-get install bc -y
+	sleep 1
 	clear
 fi
 
@@ -97,7 +107,16 @@ SWAP_USAGE=$(echo "$SWAP_FIELD" | cut -d " " -f3)
 SWAP_PERNT=$(($SWAP_USAGE * 10000 / $SWAP_TOTAL / 100))
 
 # DISK / HARDDISK
-DISK_FIELD=$(df -Tl --total -t ext4 -t ext3 -t ext2 -t reiserfs -t jfs -t ntfs -t fat32 -t btrfs -t fuseblk | grep total | sed 's/ \+/ /g')
+# check if the machine is an OpenVZ container
+if [ -f "/proc/user_beancounters" ]; then
+	# yes, so count it with simfs
+	DISK_PARMS="-t ext4 -t ext3 -t ext2 -t reiserfs -t jfs -t ntfs -t fat32 -t btrfs -t fuseblk -t simfs"
+else
+	# if not, then no simfs
+	DISK_PARMS="-t ext4 -t ext3 -t ext2 -t reiserfs -t jfs -t ntfs -t fat32 -t btrfs -t fuseblk"
+fi
+
+DISK_FIELD=$(df -Tl --total $DISK_PARMS | grep total | sed 's/ \+/ /g')
 DISK_TOTAL=$(echo "$DISK_FIELD" | cut -d " " -f5)
 DISK_USAGE=$(echo "$DISK_FIELD" | cut -d " " -f4)
 DISK_PERNT=$(($DISK_USAGE * 10000 / $DISK_TOTAL / 100))
@@ -106,7 +125,7 @@ DISK_PERNT=$(($DISK_USAGE * 10000 / $DISK_TOTAL / 100))
 if which apt-get >/dev/null; then
 	UPD_PACKAGES=$(apt-get -s dist-upgrade | awk '/^Inst/ { print $2 }' | wc -l)
 	if [ "$UPD_PACKAGES" -gt "0" ]; then
-		UPD_PACKAGES="$UPD_PACKAGES (update recommended!)"
+		UPD_PACKAGES="$UPD_PACKAGES (updates available!)"
 	else
 		UPD_PACKAGES="$UPD_PACKAGES (well done!)"
 	fi
