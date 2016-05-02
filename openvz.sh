@@ -46,7 +46,7 @@ then
   apt-get install linux-image-openvz-amd64 linux-headers-2.6-openvz-amd64 -y
 else
   apt-get install linux-image-openvz-686 linux-headers-2.6-openvz-686 -y
-if
+fi
 
 # Change required system settings
 echo "[INFO] Change required system settings..."
